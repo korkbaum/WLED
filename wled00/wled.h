@@ -24,22 +24,22 @@
 
 // You can choose some of these features to disable:
 //#define WLED_DISABLE_ALEXA       // saves 11kb
-<<<<<<< HEAD
+//<<<<<<< HEAD
 #define WLED_DISABLE_BLYNK       // saves 6kb
 #define WLED_DISABLE_CRONIXIE    // saves 3kb
 //WLED_DISABLE_FX_HIGH_FLASH_USE (need to enable in PIO config or FX.h, saves 18kb)
-=======
+//=======
 //#define WLED_DISABLE_BLYNK       // saves 6kb
 //#define WLED_DISABLE_CRONIXIE    // saves 3kb
->>>>>>> f60579fd216349f9f3c6df23cfc964e858ba3e04
+//>>>>>>> f60579fd216349f9f3c6df23cfc964e858ba3e04
 //#define WLED_DISABLE_HUESYNC     // saves 4kb
 #define WLED_DISABLE_INFRARED    // there is no pin left for this on ESP8266-01, saves 12kb
 #ifndef WLED_DISABLE_MQTT
   #define WLED_ENABLE_MQTT         // saves 12kb
 #endif
-#define WLED_ENABLE_ADALIGHT       // saves 500b only
+//#define WLED_ENABLE_ADALIGHT       // saves 500b only
 //#define WLED_ENABLE_DMX          // uses 3.5kb (use LEDPIN other than 2)
-#define WLED_ENABLE_LOXONE         // uses 1.2kb
+//#define WLED_ENABLE_LOXONE         // uses 1.2kb
 #ifndef WLED_DISABLE_WEBSOCKETS
   #define WLED_ENABLE_WEBSOCKETS
 #endif
