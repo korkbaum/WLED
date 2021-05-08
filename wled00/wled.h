@@ -24,11 +24,11 @@
 
 // You can choose some of these features to disable:
 //#define WLED_DISABLE_ALEXA       // saves 11kb
-//#define WLED_DISABLE_BLYNK       // saves 6kb
-//#define WLED_DISABLE_CRONIXIE    // saves 3kb
+#define WLED_DISABLE_BLYNK       // saves 6kb
+#define WLED_DISABLE_CRONIXIE    // saves 3kb
 //WLED_DISABLE_FX_HIGH_FLASH_USE (need to enable in PIO config or FX.h, saves 18kb)
 //#define WLED_DISABLE_HUESYNC     // saves 4kb
-//#define WLED_DISABLE_INFRARED    // there is no pin left for this on ESP8266-01, saves 12kb
+#define WLED_DISABLE_INFRARED    // there is no pin left for this on ESP8266-01, saves 12kb
 #ifndef WLED_DISABLE_MQTT
   #define WLED_ENABLE_MQTT         // saves 12kb
 #endif
@@ -244,6 +244,9 @@ WLED_GLOBAL uint16_t transitionDelay _INIT(750);    // default crossfade duratio
 
 WLED_GLOBAL bool skipFirstLed  _INIT(false);        // ignore first LED in strip (useful if you need the LED as signal repeater)
 WLED_GLOBAL byte briMultiplier _INIT(100);          // % of brightness to set (to limit power, if you set it to 50 and set bri to 255, actual brightness will be 127)
+
+WLED_GLOBAL bool fxsel_active[120] _INIT_N(({0}));      // selected effects active flag
+WLED_GLOBAL bool palsel_active[60] _INIT_N(({0}));      // selected palettes active flag
 
 // User Interface CONFIG
 WLED_GLOBAL char serverDescription[33] _INIT("WLED");  // Name of module

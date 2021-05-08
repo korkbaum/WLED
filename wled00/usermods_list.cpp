@@ -10,6 +10,11 @@
  * \/ \/ \/
  */
 //#include "usermod_v2_example.h"
+
+#ifdef USERMOD_ID_POWERLED							//added for usermod_powerled
+#include "usermod_powerled.h"
+#endif
+
 #ifdef USERMOD_DALLASTEMPERATURE
 #include "../usermods/Temperature/usermod_temperature.h"
 #endif
@@ -58,6 +63,13 @@ void registerUsermods()
    * \/ \/ \/
    */
   //usermods.add(new MyExampleUsermod());
+  
+  
+#ifdef USERMOD_ID_POWERLED
+	usermods.add(new usermod_powerled());			//added for usermod_powerled
+#endif
+  
+  
   
   #ifdef USERMOD_DALLASTEMPERATURE
   usermods.add(new UsermodTemperature());

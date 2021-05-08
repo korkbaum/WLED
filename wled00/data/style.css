@@ -46,3 +46,19 @@ td {
 .d5 {
   width: 4.5em !important;
 }
+.button2 {
+		background: #333;
+		color: #fff;
+		font: 400 18px Arial;
+		border: 0px solid white;
+		border-radius: 20px;
+		display: inline-block;
+		height: 28px;
+		width: 250px;
+		margin-top: 8px;
+}
+.button2:hover {
+		background: #444;
+		background-color: #555;
+		color: #eee;
+}

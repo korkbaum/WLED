@@ -2,7 +2,6 @@
 var loc = false, locip;
 var noNewSegs = false;
 var isOn = false, nlA = false, isLv = false, isInfo = false, isNodes = false, syncSend = false, syncTglRecv = true, isRgbw = false;
-var PWRisOn = false;	//PowerLed mod
 var whites = [0,0,0];
 var selColors;
 var expanded = [false];
@@ -19,14 +18,12 @@ var d = document;
 const ranges = RangeTouch.setup('input[type="range"]', {});
 var palettesData;
 var pJson = {};
-var fxJson = [];
-var palJson = [];
 var pN = "", pI = 0;
 var pmt = 1, pmtLS = 0, pmtLast = 0;
 var lastinfo = {};
 var cfg = {
 	theme:{base:"dark", bg:{url:""}, alpha:{bg:0.6,tab:0.8}, color:{bg:""}},
-	comp :{colors:{picker: true, rgb: false, quick: false, hex: false}, labels:true, pcmbot:false, pid:true}
+	comp :{colors:{picker: true, rgb: false, quick: true, hex: false}, labels:true, pcmbot:false, pid:true}
 };
 
 var cpick = new iro.ColorPicker("#picker", {
@@ -38,7 +35,7 @@ var cpick = new iro.ColorPicker("#picker", {
       component: iro.ui.Wheel,
       options: {}
     },
-		/*{ 							// UI mod, eliminate obsolete sliders
+    {
       component: iro.ui.Slider,
       options: {
         sliderType: 'value'
@@ -51,7 +48,7 @@ var cpick = new iro.ColorPicker("#picker", {
         minTemperature: 2100,
         maxTemperature: 10000
       }
-    }*/
+    }
   ]
 });
 
@@ -182,33 +179,21 @@ function loadBg(iUrl) {
 	});
 }
 
-async function onLoad() {
-
-	locip = localStorage.getItem('locIp');
+function onLoad() {
 	if (window.location.protocol == "file:") {
-		loc = true;
-		//locip = localStorage.getItem('locIp');
-		if (!locip){
-			locip = prompt("File Mode. Please enter WLED IP!");
-			localStorage.setItem('locIp', locip);
-		}
+	loc = true;
+	locip = localStorage.getItem('locIp');
+	if (!locip)
+	{
+		locip = prompt("File Mode. Please enter WLED IP!");
+		localStorage.setItem('locIp', locip);
 	}
-	
-	// Create new WebSocket. Automatic updates of UI in case of being controlled through API calls or by synched lights
-	var wsurl = locip ? `ws://${locip}/ws`:`ws://${window.location.host}/ws`;
-	var mySocket = new WebSocket(wsurl);
-	// Attach listener
-	mySocket.onmessage = function(event) { 
-		var json = JSON.parse(event.data);
-		if (handleJson(json.state)) updateUI(true);	
 	}
-
-	await load_fx_pal_jsons(); //show only effects and palettes wich are marked as active in settings_leds
-	
 	var sett = localStorage.getItem('wledUiCfg');
 	if (sett) cfg = mergeDeep(cfg, JSON.parse(sett));
 
 	resetPUtil();
+
 	applyCfg();
 	loadBg(cfg.theme.bg.url);
 
@@ -217,7 +202,7 @@ async function onLoad() {
 		cd[i].style.backgroundColor = "rgb(0, 0, 0)";
 	}
 	selectSlot(0);
-	//updateTablinks(0);
+	updateTablinks(0);
 	resetUtil();
 	cpick.on("input:end", function() {
 		setColor(1);
@@ -227,7 +212,7 @@ async function onLoad() {
 	d.addEventListener("visibilitychange", handleVisibilityChange, false);
 	size();
 	d.getElementById("cv").style.opacity=0;
-	//if (localStorage.getItem('pcm') == "true") togglePcMode(true);
+	if (localStorage.getItem('pcm') == "true") togglePcMode(true);
 	var sls = d.querySelectorAll('input[type="range"]');
 	for (var sl of sls) {
 		sl.addEventListener('input', updateBubble, true);
@@ -236,35 +221,8 @@ async function onLoad() {
 	}
 }
 
-// FX and PAL json need some time to be read and processed 
-// Using Async/Await to make sure everything is ready before proceeding.
-async function load_fx_pal_jsons() {
-
-	var url = `/cfg.json`;
-	if (loc) { url = `http://${locip}${url}`; }
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    var str = "";
-	var i = 1; j = 1;
-	for (const [key, value] of Object.entries(data)) {
-		str = key.substr(0,3);  
-		if (str == "fxc") {
-			fxJson[i] = `${value}`;
-			//console.log(" index.js cfg.json fxc: ", i, fxJson[i]);
-			i++;
-		}
-		if (str == "pal") {
-			palJson[j] = `${value}`;
-			//console.log(" index.js cfg.json pal: ", j, palJson[j]);
-			j++;
-		}
-	}
-}
-
-
-function updateTablinks(tabI) {
+function updateTablinks(tabI)
+{
 	var tablinks = d.getElementsByClassName("tablinks");
 	for (var i of tablinks) {
 		i.className = i.className.replace(" active", "");
@@ -278,7 +236,7 @@ function openTab(tabI, force = false) {
 	iSlide = tabI;
 	_C.classList.toggle('smooth', false);
 	_C.style.setProperty('--i', iSlide);
-	//updateTablinks(tabI);
+	updateTablinks(tabI);
 }
 
 var timeout;
@@ -300,7 +258,8 @@ function clearErrorToast() {
 	d.getElementById("toast").className = d.getElementById("toast").className.replace("error", "");
 }
 
-function getRuntimeStr(rt) {
+function getRuntimeStr(rt)
+{
 	var t = parseInt(rt);
 	var days = Math.floor(t/86400);
 	var hrs = Math.floor((t - days*86400)/3600);
@@ -314,13 +273,16 @@ function getRuntimeStr(rt) {
 	return str;
 }
 
-function inforow(key, val, unit = "") {
+function inforow(key, val, unit = "")
+{
 	return `<tr><td class="keytd">${key}</td><td class="valtd">${val}${unit}</td></tr>`;
 }
 
-function getLowestUnusedP() {
+function getLowestUnusedP()
+{
 	var l = 1;
-	for (var key in pJson) {
+	for (var key in pJson)
+	{
 		if (key == l) l++;
   }
   if (l > 250) l = 250;
@@ -358,13 +320,16 @@ function qlName(i) {
 
 function cpBck() {
 	var copyText = d.getElementById("bck");
-	copyText.select();
-	copyText.setSelectionRange(0, 999999);
-	d.execCommand("copy");
+
+  copyText.select();
+  copyText.setSelectionRange(0, 999999);
+  d.execCommand("copy");
+	
 	showToast("Copied to clipboard!");
 }
 
-function presetError(empty) {
+function presetError(empty)
+{
 	var hasBackup = false; var bckstr = "";
 	try {
 		bckstr = localStorage.getItem("wledP");
@@ -393,7 +358,8 @@ function presetError(empty) {
 	if (hasBackup) d.getElementById('bck').value = bckstr;
 }
 
-function loadPresets() {
+function loadPresets()
+{
 	var url = '/presets.json';
 	if (loc) {
 		url = `http://${locip}/presets.json`;
@@ -421,33 +387,32 @@ function loadPresets() {
 }
 
 var pQL = [];
-var pQL2 = [];			//show quick load preset buttons also in main windows
 
-function populateQL() {
+function populateQL()
+{
 	var cn = "";
-	var cn2 = "";
 	if (pQL.length > 0) {
-		cn += `<p class="labels">Quick load</p>`;
-		
-		var it = 0;
-		for (var key of (pQL||[])) {
-			cn += `<button class="xxs btn psts" id="p${key[0]}qlb" onclick="setPreset(${key[0]});">${key[1]}</button>`;
-			cn2 += `<button class="xxs btn psts" id="p${key[0]}qlb" onclick="setPreset(${key[0]});">${key[1]}</button>`;
-			it++;
-			if (it >= 5) {		//UI mod, was >4
-				it = 0;
-				cn += '<br>'; cn2 += '<br>';
-			}
-		}
-		if (it != 0) cn += '<br>'; cn2 += '<br>';
-		
-		cn += `<p class="labels">All presets</p>`;
+	cn += `<p class="labels">Quick load</p>`;
+
+  var it = 0;
+	for (var key of (pQL||[]))
+	{
+    cn += `<button class="xxs btn psts" id="p${key[0]}qlb" onclick="setPreset(${key[0]});">${key[1]}</button>`;
+    it++;
+    if (it > 4) {
+      it = 0;
+      cn += '<br>';
+    }
+  }
+  if (it != 0) cn+= '<br>';
+
+	cn += `<p class="labels">All presets</p>`;
 	}
 	d.getElementById('pql').innerHTML = cn;
-	d.getElementById('pql2').innerHTML = cn2;
 }
 
-function populatePresets(fromls) {
+function populatePresets(fromls)
+{
 	if (fromls) pJson = JSON.parse(localStorage.getItem("wledP"));
 	delete pJson["0"];
 	var cn = "";
@@ -457,7 +422,8 @@ function populatePresets(fromls) {
   pQL = [];
   var is = [];
 
-	for (var key of (arr||[])) {
+	for (var key of (arr||[]))
+	{
 		if (!isObject(key[1])) continue;
 		let i = parseInt(key[0]);
 		var qll = key[1].ql;
@@ -490,7 +456,8 @@ function populatePresets(fromls) {
 	populateQL();
 }
 
-function populateInfo(i) {
+function populateInfo(i)
+{
 	var cn="";
 	var heap = i.freeheap/1000;
 	heap = heap.toFixed(1);
@@ -520,8 +487,8 @@ function populateInfo(i) {
 	${inforow("Signal strength",i.wifi.signal +"% ("+ i.wifi.rssi, " dBm)")}
 	${inforow("Uptime",getRuntimeStr(i.uptime))}
 	${inforow("Free heap",heap," kB")}
-  	${inforow("Estimated current",pwru)}
-  	${inforow("Frames / second",i.leds.fps)}
+  ${inforow("Estimated current",pwru)}
+  ${inforow("Frames / second",i.leds.fps)}
 	${inforow("MAC address",i.mac)}
 	${inforow("Filesystem",i.fs.u + "/" + i.fs.t + " kB (" +Math.round(i.fs.u*100/i.fs.t) + "%)")}
 	${inforow("Environment",i.arch + " " + i.core + " (" + i.lwip + ")")}
@@ -529,11 +496,13 @@ function populateInfo(i) {
 	d.getElementById('kv').innerHTML = cn;
 }
 
-function populateSegments(s) {
+function populateSegments(s)
+{
 	var cn = "";
 	segCount = 0; lowestUnused = 0; lSeg = 0;
 
-	for (var y = 0; y < (s.seg||[]).length; y++) {
+	for (var y = 0; y < (s.seg||[]).length; y++)
+	{
 		segCount++;
 
 		var inst=s.seg[y];
@@ -611,7 +580,7 @@ function populateSegments(s) {
 	d.getElementById('rsbtn').style.display = (segCount > 1) ? "inline":"none";
 }
 
-/*function populateEffects(effects)
+function populateEffects(effects)
 {
 	var html = `<div class="searchbar"><input type="text" class="search" placeholder="Search" oninput="search(this)" />
     <i class="icons search-cancel-icon" onclick="cancelSearch(this)">&#xe38f;</i></div>`;
@@ -675,7 +644,6 @@ function populatePalettes(palettes)
 
 	d.getElementById('selectPalette').innerHTML=html;
 }
-*/
 
 function redrawPalPrev()
 {
@@ -837,18 +805,22 @@ function updateTrail(e, slidercol)
 	e.parentNode.getElementsByClassName('sliderdisplay')[0].style.background = val;
 }
 
-function updateBubble(e) {
+function updateBubble(e)
+{
 	var bubble = e.target.parentNode.getElementsByTagName('output')[0];
+
 	if (bubble) {
 		bubble.innerHTML = e.target.value;
 	}
 }
 
-function toggleBubble(e) {
-	//e.target.parentNode.querySelector('output').classList.toggle('hidden');
+function toggleBubble(e)
+{
+	e.target.parentNode.querySelector('output').classList.toggle('hidden');
 }
 
-function updateLen(s) {
+function updateLen(s)
+{
 	if (!d.getElementById(`seg${s}s`)) return;
 	var start = parseInt(d.getElementById(`seg${s}s`).value);
 	var stop	= parseInt(d.getElementById(`seg${s}e`).value);
@@ -860,7 +832,8 @@ function updateLen(s) {
 		out = "1 LED";
 	}
 
-	if (d.getElementById(`seg${s}grp`) != null) {
+	if (d.getElementById(`seg${s}grp`) != null)
+	{
 		var grp = parseInt(d.getElementById(`seg${s}grp`).value);
 		var spc = parseInt(d.getElementById(`seg${s}spc`).value);
 		if (grp == 0) grp = 1;
@@ -871,14 +844,15 @@ function updateLen(s) {
 	d.getElementById(`seg${s}len`).innerHTML = out;
 }
 
-function updatePA() {
+function updatePA()
+{
 	var ps = d.getElementsByClassName("seg");
 	for (let i = 0; i < ps.length; i++) {
 		ps[i].style.backgroundColor = "var(--c-2)";
 	}
 	ps = d.getElementsByClassName("psts");
 	for (let i = 0; i < ps.length; i++) {
-	//	ps[i].style.backgroundColor = "var(--c-2)";	//deleted because it avoids hover highlighting
+		ps[i].style.backgroundColor = "var(--c-2)";
 	}
 	if (currentPreset > 0) {
 		var acv = d.getElementById(`p${currentPreset}o`);
@@ -889,28 +863,25 @@ function updatePA() {
 	}
 }
 
-function updateUI() {
+function updateUI()
+{
 	d.getElementById('buttonPower').className = (isOn) ? "active":"";
-	d.getElementById('PWRbuttonPower').className = (PWRisOn) ? "active":"";		// Power Led mod
-	//d.getElementById('buttonNl').className = (nlA) ? "active":"";				//UI mod
+	d.getElementById('buttonNl').className = (nlA) ? "active":"";
 	d.getElementById('buttonSync').className = (syncSend) ? "active":"";
 
-	//d.getElementById('fxb' + selectedFx).style.backgroundColor = "var(--c-6)";		//UI mod 
 	updateTrail(d.getElementById('sliderBri'));
-	updateTrail(d.getElementById('sliderPWRBri'));			// Power Led mod
 	updateTrail(d.getElementById('sliderSpeed'));
 	updateTrail(d.getElementById('sliderIntensity'));
 	updateTrail(d.getElementById('sliderW'));
 	if (isRgbw) d.getElementById('wwrap').style.display = "block";
-	d.getElementById('fxlist').value = selectedFx;		//UI mod 
 
-	var spal = d.getElementById("selectPalette");
 	updatePA();
 	updateHex();
 	updateRgb();
 }
 
-function displayRover(i,s) {
+function displayRover(i,s)
+{
 	d.getElementById('rover').style.transform = (i.live && s.lor == 0) ? "translateY(0px)":"translateY(100%)";
 	var sour = i.lip ? i.lip:""; if (sour.length > 2) sour = " from " + sour;
 	d.getElementById('lv').innerHTML = `WLED is receiving live ${i.lm} data${sour}`;
@@ -941,11 +912,12 @@ function requestJson(command, rinfo = true, verbose = true) {
 	}
 
 	var type = command ? 'post':'get';
-
-	if (command) {
+	if (command)
+	{
     command.v = verbose;
     command.time = Math.floor(Date.now() / 1000);
 		req = JSON.stringify(command);
+		//console.log(req);
 	}
 	fetch
 	(url, {
@@ -985,33 +957,13 @@ function requestJson(command, rinfo = true, verbose = true) {
 				}
 				pmtLast = pmt;
 
-				var x = '<option value="0">Solid Color</option>';
-				json.effects.shift(); //remove solid 
-				for (let i = 0; i < json.effects.length; i++) json.effects[i] = {id: parseInt(i)+1, name:json.effects[i]};
-				json.effects.sort(compare);
-				for (let i = 0; i < json.effects.length; i++) {
-					if (fxJson[json.effects[i].id] == "true") {
-						x += `<option value="${json.effects[i].id}">${json.effects[i].name}</option>`;
-					}
-				}
-				e1.innerHTML = x;
-				
-				var y = '<option value="0">Default</option>';
-				json.palettes.shift(); //remove default
-				for (let i = 0; i < json.palettes.length; i++) json.palettes[i] = {"id": parseInt(i)+1, "name":json.palettes[i]};
-				json.palettes.sort(compare);
-				for (let i = 0; i < json.palettes.length; i++) {
-					if (palJson[json.palettes[i].id] == "true") {
-						y += `<option value="${json.palettes[i].id}">${json.palettes[i].name}</option>`;
-					}
-				}
-				e2.innerHTML = y;
+				populateEffects(json.effects);
+				populatePalettes(json.palettes);
 			}
 
 			var info = json.info;
 			var name = info.name;
-
-			d.getElementById('buttonI').innerHTML = name;
+			d.getElementById('namelabel').innerHTML = name;
 			if (name === "Dinnerbone") {
 				d.documentElement.style.transform = "rotate(180deg)";
 			}
@@ -1025,116 +977,114 @@ function requestJson(command, rinfo = true, verbose = true) {
 			isRgbw = info.leds.wv;
 			ledCount = info.leds.count;
 			syncTglRecv = info.str;
-      		maxSeg = info.leds.maxseg;
+      maxSeg = info.leds.maxseg;
 			pmt = info.fs.pmt;
 
 			if (!command && pmt != pmtLast) {
 				setTimeout(loadPresets,99);
 			}
 			pmtLast = pmt;
-      		//d.getElementById('buttonNodes').style.display = (info.ndc > 0 && window.innerWidth > 770) ? "block":"none";
+      d.getElementById('buttonNodes').style.display = (info.ndc > 0 && window.innerWidth > 770) ? "block":"none";
 			lastinfo = info;
 			if (isInfo) {
 				populateInfo(info);
 			}
 			s = json.state;
 			displayRover(info, s);
-		}		
-			if (!handleJson(s)) {
-				showToast('No Segments!', true);
-				updateUI(false);
-			//	if (callback) callback();
-				return;
-			}
-	
-			if (s.error && s.error != 0) {
-			  var errstr = "";
-				switch (s.error) {
-					case 10: errstr = "Could not mount filesystem!"; break;
-					case 11: errstr = "Not enough space to save preset!"; break;
-					case 12: errstr = "The requested preset does not exist."; break;
-					case 19: errstr = "A filesystem error has occured."; break;
-				}	
-				showToast('Error ' + s.error + ": " + errstr, true);
-			}
-			
-			updateUI();
-		})
-		.catch(function (error) {
-			showToast(error, true);
-			console.log(error);
-		});
-}
-	
-function handleJson(s) {
-	if (!s) return false;
 
-	isOn = s.on;
-	PWRisOn = s.PWRon;		//Power Led mod
-	d.getElementById('sliderBri').value = s.bri;
-	d.getElementById('sliderPWRBri').value = s.PWRbri;	//Power Led mod
-	
-	//nlA = s.nl.on;
-	//nlDur = s.nl.dur;
-	//nlTar = s.nl.tbri;
-	//nlFade = s.nl.fade;
-	syncSend = s.udpn.send;
-	currentPreset = s.ps;
-	d.getElementById('cyToggle').checked = (s.pl >= 0);
-	d.getElementById('cycs').value = s.ccnf.min;
-	d.getElementById('cyce').value = s.ccnf.max;
-	d.getElementById('cyct').value = s.ccnf.time/10;
-	d.getElementById('cyctt').value = s.transition/10;
-
-	var selc=0; var ind=0;
-	populateSegments(s);
-	for (let i = 0; i < (s.seg||[]).length; i++)
-	{
-		if(s.seg[i].sel) {selc = ind; break;} ind++;
-	}
-	var i=s.seg[selc];
-	if (!i) return false; // no segments!
-	
-	selColors = i.col;
-	var cd = d.getElementById('csl').children;
-	for (let e = cd.length-1; e >= 0; e--)
-	{
-		var r,g,b,w;
-		if (Array.isArray(i.col[e])) {
-			r = i.col[e][0];
-			g = i.col[e][1];
-			b = i.col[e][2];
-			if (isRgbw) w = i.col[e][3];
-		} else {
-			r = (i.col[e]>>16) & 0xFF;
-			g = (i.col[e]>> 8) & 0xFF;
-			b = (i.col[e]    ) & 0xFF;
-			if (isRgbw) w = (i.col[e] >> 24) & 0xFF;
+      if (!rinfo) loadPalettesData();
 		}
-		cd[e].style.backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
-		if (isRgbw) whites[e] = parseInt(w);
-		selectSlot(csel);
-	}
-	d.getElementById('sliderSpeed').value = whites[csel];
 
-	d.getElementById('sliderSpeed').value = i.sx;
-	d.getElementById('sliderIntensity').value = i.ix;
+		isOn = s.on;
+		d.getElementById('sliderBri').value= s.bri;
+		nlA = s.nl.on;
+		nlDur = s.nl.dur;
+		nlTar = s.nl.tbri;
+		nlFade = s.nl.fade;
+		syncSend = s.udpn.send;
+		currentPreset = s.ps;
+		d.getElementById('cyToggle').checked = (s.pl >= 0);
+		d.getElementById('cycs').value = s.ccnf.min;
+		d.getElementById('cyce').value = s.ccnf.max;
+		d.getElementById('cyct').value = s.ccnf.time /10;
+		d.getElementById('cyctt').value = s.transition /10;
+
+		var selc=0; var ind=0;
+		populateSegments(s);
+		for (let i = 0; i < (s.seg||[]).length; i++)
+		{
+			if(s.seg[i].sel) {selc = ind; break;} ind++;
+		}
+		var i=s.seg[selc];
+		if (!i) {
+			showToast('No Segments!', true);
+			updateUI();
+			return;
+		}
 		
-	if (i.fx == 0) {		// Solid Color chosen, not FX. De-activate FX elements (Palettes, Speed etc).
-							// Leave fx button text untouched (.i. don't update to "Solid Color") to easily go back to effect chosen before
-		document.getElementById("fxlist").style.color = "Gray";
-		document.getElementById("effects").style.display = 'none';
-	} else {			 	// FX chosen, not Solid Color
-		selectedFx = i.fx; 
-		document.getElementById("fxlist").style.color = "White";	//change button text to white if FX is active
-		document.getElementById("effects").style.display = 'block';
-	}
-	
-	selectedPal = i.pal;
-	displayRover(lastinfo, s);
-	return true;
-}
+		selColors = i.col;
+		var cd = d.getElementById('csl').children;
+		for (let e = 2; e >= 0; e--)
+		{
+			cd[e].style.backgroundColor = "rgb(" + i.col[e][0] + "," + i.col[e][1] + "," + i.col[e][2] + ")";
+			if (isRgbw) whites[e] = parseInt(i.col[e][3]);
+			selectSlot(csel);
+		}
+		d.getElementById('sliderSpeed').value = whites[csel];
 
+		d.getElementById('sliderSpeed').value = i.sx;
+		d.getElementById('sliderIntensity').value = i.ix;
+
+		// Effects
+		e1.querySelector(`input[name="fx"][value="${i.fx}"]`).checked = true;
+		var selElement = e1.querySelector('.selected');
+		if (selElement) {
+			selElement.classList.remove('selected')
+		}
+		var selectedEffect = e1.querySelector(`.lstI[data-id="${i.fx}"]`);
+		selectedEffect.classList.add('selected');
+		selectedFx = i.fx;
+
+		// Palettes
+		e2.querySelector(`input[name="palette"][value="${i.pal}"]`).checked = true;
+		selElement = e2.querySelector('.selected');
+		if (selElement) {
+			selElement.classList.remove('selected')
+		}
+		e2.querySelector(`.lstI[data-id="${i.pal}"]`).classList.add('selected');
+
+		if (!command) {
+			selectedEffect.scrollIntoView({
+				behavior: 'smooth',
+				block: 'nearest',
+			});
+		}
+
+		if (s.error && s.error != 0) {
+      		var errstr = "";
+      		switch (s.error) {
+				case 10:
+					errstr = "Could not mount filesystem!";
+					break;
+				case 11:
+					errstr = "Not enough space to save preset!";
+					break;
+				case 12:
+					errstr = "The requested preset does not exist.";
+					break;
+				case 19:
+					errstr = "A filesystem error has occured.";
+					break;
+      		}
+      		showToast('Error ' + s.error + ": " + errstr, true);
+    	}
+		updateUI();
+	})
+	.catch(function (error) {
+		showToast(error, true);
+		console.log(error);
+	});
+}
 
 function togglePower() {
 	isOn = !isOn;
@@ -1143,14 +1093,7 @@ function togglePower() {
 	requestJson(obj);
 }
 
-function PWRtogglePower() {		//Power Led mod
-	PWRisOn = !PWRisOn;
-	var obj = {"PWRon": PWRisOn};
-	obj.transition = parseInt(d.getElementById('cyctt').value*10);
-	requestJson(obj);
-}
-
-/* function toggleNl() {
+function toggleNl() {
 	nlA = !nlA;
 	if (nlA)
 	{
@@ -1160,7 +1103,7 @@ function PWRtogglePower() {		//Power Led mod
 	}
 	var obj = {"nl": {"on": nlA}};
 	requestJson(obj);
-}*/
+}
 
 function toggleSync() {
 	syncSend = !syncSend;
@@ -1185,19 +1128,19 @@ function toggleLiveview() {
 }
 
 function toggleInfo() {
-	//if (isNodes) toggleNodes();
+  if (isNodes) toggleNodes();
 	isInfo = !isInfo;
 	if (isInfo) populateInfo(lastinfo);
 	d.getElementById('info').style.transform = (isInfo) ? "translateY(0px)":"translateY(100%)";
-	//d.getElementById('buttonI').className = (isInfo) ? "active":"";
+	d.getElementById('buttonI').className = (isInfo) ? "active":"";
 }
 
 function toggleNodes() {
-	if (isInfo) toggleInfo();
+  if (isInfo) toggleInfo();
 	isNodes = !isNodes;
 	d.getElementById('nodes').style.transform = (isNodes) ? "translateY(0px)":"translateY(100%)";
-	//d.getElementById('buttonNodes').className = (isNodes) ? "active":"";
-	if (isNodes) loadNodes();
+  d.getElementById('buttonNodes').className = (isNodes) ? "active":"";
+  if (isNodes) loadNodes();
 }
 
 function makeSeg() {
@@ -1292,7 +1235,8 @@ function tglCs(i){
 	d.getElementById(`p${i}o2`).style.display = !pss? "block" : "none";
 }
 
-function selSegEx(s){
+function selSegEx(s)
+{
 	var obj = {"seg":[]};
 	for (let i=0; i<=lSeg; i++){
 		obj.seg.push({"sel":(i==s)?true:false});
@@ -1354,29 +1298,40 @@ function setSegBri(s){
 	requestJson(obj);
 }
 
-function setX(ind) {
+function setX(ind = null) {
+	if (ind === null) {
+		ind = parseInt(d.querySelector('#fxlist input[name="fx"]:checked').value);
+	} else {
+		d.querySelector(`#fxlist input[name="fx"][value="${ind}`).checked = true;
+	}
+	var selElement = d.querySelector('#fxlist .selected');
+	if (selElement) {
+		selElement.classList.remove('selected')
+	}
+	d.querySelector(`#fxlist .lstI[data-id="${ind}"]`).classList.add('selected');
+
 	var obj = {"seg": {"fx": parseInt(ind)}};
 	requestJson(obj);
 }
 
-function setEffect() {
-	var obj = {"seg": {"fx": parseInt(d.getElementById('fxlist').value)}};
-	requestJson(obj);
-}
-
-function setPalette() {
-	var obj = {"seg": {"pal": parseInt(d.getElementById('selectPalette').value)}};
+function setPalette(paletteId = null)
+{
+	if (paletteId === null) {
+		paletteId = parseInt(d.querySelector('#selectPalette input[name="palette"]:checked').value);
+	} else {
+		d.querySelector(`#selectPalette input[name="palette"][value="${paletteId}`).checked = true;
+	}
+	var selElement = d.querySelector('#selectPalette .selected');
+	if (selElement) {
+		selElement.classList.remove('selected')
+	}
+	d.querySelector(`#selectPalette .lstI[data-id="${paletteId}"]`).classList.add('selected');
+	var obj = {"seg": {"pal": paletteId}};
 	requestJson(obj);
 }
 
 function setBri() {
 	var obj = {"bri": parseInt(d.getElementById('sliderBri').value)};
-	obj.transition = parseInt(d.getElementById('cyctt').value*10);
-	requestJson(obj);
-}
-
-function setPWRBri() {			// Power Led mod
-	var obj = {"PWRbri": parseInt(d.getElementById('sliderPWRBri').value)};
 	obj.transition = parseInt(d.getElementById('cyctt').value*10);
 	requestJson(obj);
 }
@@ -1487,7 +1442,7 @@ function selectSlot(b) {
 	updateTrail(d.getElementById('sliderW'));
 	updateHex();
 	updateRgb();
-	//redrawPalPrev();
+	redrawPalPrev();
 }
 
 var lasth = 0;
@@ -1576,12 +1531,14 @@ var hc = 0;
 setInterval(function(){if (!isInfo) return; hc+=18; if (hc>300) hc=0; if (hc>200)hc=306; if (hc==144) hc+=36; if (hc==108) hc+=18;
 d.getElementById('heart').style.color = `hsl(${hc}, 100%, 50%)`;}, 910);
 
-function openGH() {
+function openGH()
+{
 	window.open("https://github.com/Aircoookie/WLED/wiki");
 }
 
 var cnfr = false;
-function cnfReset() {
+function cnfReset()
+{
 	if (!cnfr)
 	{
 		var bt = d.getElementById('resetbtn');
@@ -1593,9 +1550,11 @@ function cnfReset() {
 }
 
 var cnfrS = false;
-function rSegs() {
+function rSegs()
+{
 	var bt = d.getElementById('rsbtn');
-	if (!cnfrS)	{
+	if (!cnfrS)
+	{
 	bt.style.color = "#f00";
 	bt.innerHTML = "Confirm reset";
 	cnfrS = true; return;
@@ -1692,7 +1651,8 @@ function cancelSearch(ic) {
   searchField.focus();
 }
 
-function expand(i,a) {
+function expand(i,a)
+{
 	if (!a) expanded[i] = !expanded[i];
 	d.getElementById('seg' +i).style.display = (expanded[i]) ? "block":"none";
 	d.getElementById('sege' +i).style.transform = (expanded[i]) ? "rotate(180deg)":"rotate(0deg)";
@@ -1711,7 +1671,6 @@ function expand(i,a) {
 
 function unfocusSliders() {
 	d.getElementById("sliderBri").blur();
-	d.getElementById("sliderPWRBri").blur();	//Power LED mod
 	d.getElementById("sliderSpeed").blur();
 	d.getElementById("sliderIntensity").blur();
 }
@@ -1759,7 +1718,7 @@ function move(e) {
      d.getElementsByClassName("tabcontent")[iSlide].scrollTop == scrollS) {
 		_C.style.setProperty('--i', iSlide -= s);
 		f = 1 - f;
-		//updateTablinks(iSlide);
+		updateTablinks(iSlide);
 	}
 	_C.style.setProperty('--f', f);
 	_C.classList.toggle('smooth', !(locked = false));
@@ -1768,16 +1727,17 @@ function move(e) {
 
 function size() {
 	w = window.innerWidth;
- // d.getElementById('buttonNodes').style.display = (lastinfo.ndc > 0 && w > 770) ? "block":"none";
+  d.getElementById('buttonNodes').style.display = (lastinfo.ndc > 0 && w > 770) ? "block":"none";
 	var h = d.getElementById('top').clientHeight;
 	sCol('--th', h + "px");
-//	sCol('--bh', d.getElementById('bot').clientHeight + "px");
+	sCol('--bh', d.getElementById('bot').clientHeight + "px");
 	if (isLv) h -= 4;
 	sCol('--tp', h + "px");
-//	togglePcMode();
+	togglePcMode();
 }
 
-function togglePcMode(fromB = false) {
+function togglePcMode(fromB = false)
+{
 	if (fromB) {
 	pcModeA = !pcModeA;
 	localStorage.setItem('pcm', pcModeA);
@@ -1788,10 +1748,10 @@ function togglePcMode(fromB = false) {
 	openTab(0, true);
 	if (w < 1250) {pcMode = false;}
 	else if (pcModeA && !fromB) pcMode = pcModeA;
-	//updateTablinks(0);
+	updateTablinks(0);
 	d.getElementById('buttonPcm').className = (pcMode) ? "active":"";
-	//d.getElementById('bot').style.height = (pcMode && !cfg.comp.pcmbot) ? "0":"auto";
-	//sCol('--bh', d.getElementById('bot').clientHeight + "px");
+	d.getElementById('bot').style.height = (pcMode && !cfg.comp.pcmbot) ? "0":"auto";
+	sCol('--bh', d.getElementById('bot').clientHeight + "px");
   _C.style.width = (pcMode)?'100%':'400%';
 	lastw = w;
 }

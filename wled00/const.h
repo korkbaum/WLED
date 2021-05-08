@@ -33,6 +33,7 @@
 #define USERMOD_ID_DHT           10            //Usermod "usermod_dht.h"
 #define USERMOD_ID_MODE_SORT     11            //Usermod "usermod_v2_mode_sort.h"
 #define USERMOD_ID_VL53L0X       12            //Usermod "usermod_vl53l0x_gestures.h"
+#define USERMOD_ID_POWERLED      13            //Usermod "usermod_powerled.h"
 
 //Access point behavior
 #define AP_BEHAVIOR_BOOT_NO_CONN  0            //Open AP when no connection after boot
@@ -208,7 +209,7 @@
 #endif
 
 // string temp buffer (now stored in stack locally)
-#define OMAX 2048
+#define OMAX 4500     //was 2048, had to be increased to handle a bunch of additional entries in settings_leds and cfg.json
 
 #define E131_MAX_UNIVERSE_COUNT 9
 

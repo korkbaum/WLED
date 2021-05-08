@@ -184,6 +184,22 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     skipFirstLed = request->hasArg(F("SL"));
     t = request->arg(F("BF")).toInt();
     if (t > 0) briMultiplier = t;
+
+    //fx selection checkboxes
+    char fxchkboxc[12];
+    for (int i = 1; i < strip.getModeCount(); i++) {
+      fxchkboxc[0] = '\0';
+      sprintf(fxchkboxc, "%s%d", "fxc", i);
+      fxsel_active[i] = request->hasArg(F(fxchkboxc));
+    }
+
+    //palette selection checkboxes
+    char palchkboxc[12];
+    for (int i = 1; i < strip.getPaletteCount(); i++) {
+      palchkboxc[0] = '\0';
+      sprintf(palchkboxc, "%s%d", "palc", i);
+      palsel_active[i] = request->hasArg(F(palchkboxc));
+    }
   }
 
   //UI

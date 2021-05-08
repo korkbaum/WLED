@@ -339,6 +339,22 @@ void getSettingsJS(byte subPage, char* dest)
     sappend('c',SET_F("RM"),rlyMde);
     sappend('v',SET_F("BT"),btnPin);
     sappend('v',SET_F("IR"),irPin);
+
+    //fx selection
+    char fxchkboxc[12];
+    for (int i = 1; i < strip.getModeCount(); i++) {
+      fxchkboxc[0] = '\0';
+      sprintf(fxchkboxc, "%s%d", "fxc", i);
+      sappend('c',SET_F(fxchkboxc), fxsel_active[i]);
+    }
+
+    //palette selection
+    char palchkboxc[12];
+    for (int i = 1; i < strip.getPaletteCount(); i++) {
+      palchkboxc[0] = '\0';
+      sprintf(palchkboxc, "%s%d", "palc", i);
+      sappend('c',SET_F(palchkboxc), palsel_active[i]);
+    }
   }
 
   if (subPage == 3)

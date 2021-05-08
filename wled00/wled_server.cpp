@@ -313,8 +313,10 @@ void serveMessage(AsyncWebServerRequest* request, uint16_t code, const String& h
 String settingsProcessor(const String& var)
 {
   if (var == "CSS") {
-    char buf[2048];
+    char buf[4500];   //was 2048, had to be increased to handel a bunch of additional entries in settings_leds and cfg.json
     getSettingsJS(optionType, buf);
+
+    Serial.println(buf);
     return String(buf);
   }
   
