@@ -44,25 +44,26 @@ Firstly, the usage of drop-downs and secondly a Pre-Selection of effects & palet
 I'm really keen to get any feedback on all these changes!
 <br>
 <p align="center">Original V12 UI:<br>
-<img src="/images/v12orig.png"></p>
+<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/v12orig.png"></p>
+
 <br>
 <p align="center">Modified V12 UI. No effect controls because no effect is active.<br>
-<img src="/images/V12_modified1.png"></p>
+<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12_modified1.png"></p>
 <br>
 <p align="center">Modified V12 UI. Only the pre-selected effects are shown in a dropdown.<br>
-<img src="/images/V12_modified2.png"></p>
+<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12_modified2.png"></p>
 <br>
 <p align="center">Modified V12 UI. Effect is active, effect controls are now shown.<br>
-<img src="/images/V12_modified4.png"></p>
+<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12_modified4.png"></p>
 <br>
 <p align="center">Modified V12 UI. Settings page with smaller buttons.<br>
-<img src="/images/V12_modified5.png"></p>
+<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12_modified5.png"></p>
 <br>
 <p align="center">Modified V12 UI. New Effects Selection section in settings_leds.htm. Only those with a checked box will appear in the effects dropdown.<br>
-<img src="/images/V12_modified6.png"></p>
+<img src="/images/https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12_modified6.png"></p>
 <br>
 <p align="center">Modified V12 UI. Palette Selection section in settings_leds.htm. Only those with a checked box will appear in the palette dropdown.<br>
-<img src="/images/V12_modified7.png"></p>
+<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12_modified7.png"></p>
 <br>
 <br>
 <br>
