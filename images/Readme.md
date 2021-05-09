@@ -41,7 +41,7 @@ Firstly, the usage of drop-downs and secondly a Pre-Selection of effects & palet
 ------- Overview page has much smaller buttons & hover effect<br>
 -------	Effect and Palette pre-selection were integrated into LED Settings page<br>
 
-<img src="https://github.com/korkbaum/WLED/blob/wled_V12_kk2/images/V12orig.png">
+<img src="/images/V12orig.png">
 
 
 <p align="center">
