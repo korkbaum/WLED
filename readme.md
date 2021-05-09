@@ -40,10 +40,11 @@ Firstly, the usage of drop-downs and secondly a Pre-Selection of effects & palet
 4: Changes in Settings:<br>
 ------- Overview page has much smaller buttons & hover effect<br>
 -------	Effect and Palette pre-selection were integrated into LED Settings page<br>
-
-
-
-
+<br>
+<img src="/images/v12orig.png">
+<br>
+<br>
+<br>
 <p align="center">
   <img src="/images/wled_logo_akemi.png">
   <a href="https://github.com/Aircoookie/WLED/releases"><img src="https://img.shields.io/github/release/Aircoookie/WLED.svg?style=flat-square"></a>
