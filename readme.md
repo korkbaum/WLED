@@ -18,7 +18,7 @@ Firstly, the usage of drop-downs and secondly a Pre-Selection of effects & palet
 -------	(Toggle) PC Mode: not required any more<br>
 --	Buttons added: <br>
 -------	„Room“ Power (for PowerLed)<br>
--------	Segments: This should actually also go to the LED settings (who is changing this all the time?) but it was hard to move it (too hard for me)<br>
+-------	Segments: This should ideally also go to the LED settings (who needs to change the segments all the time?) but it was hard to move it (too hard for me, at least)<br>
 --	Buttons changed: <br>
 -------	Power „Mood“: Only changed the icon and renamed it, this is the RGB LED Power button<br>
 -------	Additional Brightness Slider for PowerLED<br>
@@ -40,10 +40,33 @@ Firstly, the usage of drop-downs and secondly a Pre-Selection of effects & palet
 4: Changes in Settings:<br>
 ------- Overview page has much smaller buttons & hover effect<br>
 -------	Effect and Palette pre-selection were integrated into LED Settings page<br>
-
-
-
-
+<br>
+I'm really keen to get any feedback on all these changes!
+<br>
+<p align="center">Original V12 UI:<br>
+<img src="/images/v12orig.png"></p>
+<br>
+<p align="center">Modified V12 UI. No effect controls because no effect is active.<br>
+<img src="/images/V12_modified1.png"></p>
+<br>
+<p align="center">Modified V12 UI. Only the pre-selected effects are shown in a dropdown.<br>
+<img src="/images/V12_modified2.png"></p>
+<br>
+<p align="center">Modified V12 UI. Effect is active, effect controls are now shown.<br>
+<img src="/images/V12_modified4.png"></p>
+<br>
+<p align="center">Modified V12 UI. Settings page with smaller buttons.<br>
+<img src="/images/V12_modified5.png"></p>
+<br>
+<p align="center">Modified V12 UI. New Effects Selection section in settings_leds.htm. Only those with a checked box will appear in the effects dropdown.<br>
+<img src="/images/V12_modified6.png"></p>
+<br>
+<p align="center">Modified V12 UI. Palette Selection section in settings_leds.htm. Only those with a checked box will appear in the palette dropdown.<br>
+<img src="/images/V12_modified7.png"></p>
+<br>
+<br>
+<br>
+<br>
 <p align="center">
   <img src="/images/wled_logo_akemi.png">
   <a href="https://github.com/Aircoookie/WLED/releases"><img src="https://img.shields.io/github/release/Aircoookie/WLED.svg?style=flat-square"></a>
