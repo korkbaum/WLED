@@ -41,7 +41,27 @@ Firstly, the usage of drop-downs and secondly a Pre-Selection of effects & palet
 ------- Overview page has much smaller buttons & hover effect<br>
 -------	Effect and Palette pre-selection were integrated into LED Settings page<br>
 <br>
-<img src="/images/v12orig.png">
+<p align="center">Original V12 UI:<br>
+<img src="/images/v12orig.png"></p>
+
+<p align="center">Modified V12 UI. No effect controls because no effect is active.<br>
+<img src="/images/V12_modified1.png"></p>
+
+<p align="center">Modified V12 UI. Only the pre-selected effects are shown in a dropdown.<br>
+<img src="/images/V12_modified2.png"></p>
+
+<p align="center">Modified V12 UI. Effect is active, effect controls are now shown.<br>
+<img src="/images/V12_modified4.png"></p>
+
+<p align="center">Modified V12 UI. Settings page with smaller buttons.<br>
+<img src="/images/V12_modified5.png"></p>
+
+<p align="center">Modified V12 UI. New Effects Selection section in settings_leds.htm. Only those with a checked box will appear in the effects dropdown.<br>
+<img src="/images/V12_modified6.png"></p>
+
+<p align="center">Modified V12 UI. Palette Selection section in settings_leds.htm. Only those with a checked box will appear in the palette dropdown.<br>
+<img src="/images/V12_modified7.png"></p>
+<br>
 <br>
 <br>
 <br>
